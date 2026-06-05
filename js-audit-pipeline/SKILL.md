@@ -129,6 +129,7 @@ description: 前端 JavaScript 白盒/灰盒安全审计流水线。用于编排
 - 对未验证接口也要列出方法、final_baseURL、路径、参数摘要、认证方式、调用位置、验证状态和手工发包建议。
 - 对每个接口还原参数并生成动态验证请求；授权 Host 存在时，默认执行请求并观察后端响应。
 - 没有有效登录态时也必须执行 `NoAuth`，不能仅因“无登录态”标记 `StaticOnly`。
+- 对所有 `POST` JSON 或 body 形态未知接口，至少额外执行一次空 JSON `{}` 请求，避免遗漏“空体也有业务响应”的接口。
 - 对写操作/高副作用接口，使用非法/不存在 ID、canary、`dryRun/validateOnly/preview` 等低副作用参数探测鉴权、参数校验和业务成功响应。
 - 后端返回业务成功的接口必须在报告中具体上报 HTTP 状态、业务 `code/msg/success/data` 和关键字段摘要。
 - 优先后台管理、用户、角色、权限、租户、导入导出、文件、报表接口。
@@ -191,6 +192,14 @@ Authorization: Bearer {{low_priv_token}}
 Content-Type: application/json
 
 {"userId":"1002","role":"admin","tenantId":"1"}
+
+### PostEmptyJsonProbe - POST 空 JSON 探测
+POST /api/user/page HTTP/1.1
+Host: {{host}}
+Content-Type: application/json
+Accept: application/json
+
+{}
 ```
 
 高副作用接口不能直接省略，应优先做低副作用探测：

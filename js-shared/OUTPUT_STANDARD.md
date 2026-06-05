@@ -13,11 +13,12 @@
 9. Chrome MCP/浏览器运行时证据必须服务于明确验证点；不要把持续监听到的响应头缺失或异步资源存在本身当作漏洞。
 10. 对后台登录系统，运行时登录流和弱口令小字典结果必须写清验证码/2FA状态、执行/跳过原因、成功判定依据；密码和 token/cookie 默认脱敏。
 11. 授权 Host 存在时，API 不能仅停留在静态提取：无有效登录态也必须执行 `NoAuth`；写操作/高副作用接口必须尝试低副作用探测或写明明确阻断原因。
-12. 后端返回业务成功的动态响应必须具体上报：HTTP 状态、业务 `code/msg/success`、关键 `data` 字段、影响判断和证据文件；不能只写“有响应/请求成功/StaticOnly”。
-13. 禁止使用“`StaticOnly` 表示因无有效登录态或接口含写操作，未进行动态请求验证，仅做静态提取登记”这类笼统注释；`StaticOnly` 只能用于有明确阻断原因的少数接口。
-14. 全量 API 台账是硬性输出：所有发现的前后端交互 API 都必须列入报告或附录，包含方法、baseURL、路径、参数摘要、认证方式、调用位置和验证状态；不能只列高危、已验证或成功响应接口。
-15. 未验证 API 也必须列出手工发包所需信息：参数占位、缺失字段、建议认证态和请求模板，避免人工测试遗漏。
-16. Webpack/Vue CLI/Nuxt splitChunks 站点必须输出 chunk 覆盖说明：当前浏览器加载 chunk、runtime 引用 chunk、source map、服务器可访问但当前未加载的独立 chunk/旧 chunk；未加载但可访问 chunk 中的硬编码密码仍按泄露上报。
+12. 对所有 `POST` JSON 或 body 形态未知接口，除还原参数后的请求外，必须额外尝试一次空 JSON `{}` 探测，并记录其 HTTP/业务响应，避免遗漏默认响应接口。
+13. 后端返回业务成功的动态响应必须具体上报：HTTP 状态、业务 `code/msg/success`、关键 `data` 字段、影响判断和证据文件；不能只写“有响应/请求成功/StaticOnly”。
+14. 禁止使用“`StaticOnly` 表示因无有效登录态或接口含写操作，未进行动态请求验证，仅做静态提取登记”这类笼统注释；`StaticOnly` 只能用于有明确阻断原因的少数接口。
+15. 全量 API 台账是硬性输出：所有发现的前后端交互 API 都必须列入报告或附录，包含方法、baseURL、路径、参数摘要、认证方式、调用位置和验证状态；不能只列高危、已验证或成功响应接口。
+16. 未验证 API 也必须列出手工发包所需信息：参数占位、缺失字段、建议认证态和请求模板，避免人工测试遗漏。
+17. Webpack/Vue CLI/Nuxt splitChunks 站点必须输出 chunk 覆盖说明：当前浏览器加载 chunk、runtime 引用 chunk、source map、服务器可访问但当前未加载的独立 chunk/旧 chunk；未加载但可访问 chunk 中的硬编码密码仍按泄露上报。
 
 ## 输出目录
 
@@ -101,7 +102,7 @@
 
 ## API 动态验证与后端成功响应块
 
-授权 Host 存在时，最终报告必须包含本节。每个接口至少应有一条执行结果或明确阻断原因；无登录态不构成阻断理由，应执行 `NoAuth`。
+授权 Host 存在时，最终报告必须包含本节。每个接口至少应有一条执行结果或明确阻断原因；无登录态不构成阻断理由，应执行 `NoAuth`。对 `POST` JSON 或 body 形态未知接口，还应额外记录一次空 JSON `{}` 探测结果。
 
 ## 完整 API 台账块
 
@@ -139,6 +140,7 @@ api_audit/all_api_replay_templates.http
 | ID | 模式 | 方法 | URL | 测试参数摘要 | HTTP状态 | 业务code/success | msg摘要 | data摘要 | 判定 |
 |----|------|------|-----|--------------|----------|------------------|---------|----------|------|
 | API-001 | NoAuth | GET | /api/user/list?pageNum=1&pageSize=10 | 去除认证头 | 200 | code=0 | success | total=23, records存在 | VerifiedNoAuth |
+| API-002 | PostEmptyJsonProbe | POST | /api/user/page | body={} | 200 | code=0 | success | total=10, rows存在 | VerifiedEmptyJson |
 
 ## 后端成功响应证据
 

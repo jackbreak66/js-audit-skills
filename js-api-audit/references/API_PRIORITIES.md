@@ -28,10 +28,11 @@
 ## 五、验证顺序
 
 1. **NoAuth**：去掉所有 Cookie、Authorization、X-Token、CSRF、tenant header。
-2. **LowPriv**：使用普通用户认证访问后台或高敏读取接口。
-3. **ParamTamper**：修改 `id/userId/tenantId/orgId/roleId/fileId/path/url/status`。
-4. **WideRead**：扩大 `pageSize/ids/fileIds/export scope`，观察数据面扩大。
-5. **FileAccess**：对返回的 `path/url/fileUrl/downloadUrl` 拼接完整 URL 并验证是否可直接访问。
+2. **PostEmptyJsonProbe**：对 `POST` JSON 或 body 形态未知接口发送空 JSON `{}`，确认是否存在默认业务响应、默认列表或细粒度错误信息。
+3. **LowPriv**：使用普通用户认证访问后台或高敏读取接口。
+4. **ParamTamper**：修改 `id/userId/tenantId/orgId/roleId/fileId/path/url/status`。
+5. **WideRead**：扩大 `pageSize/ids/fileIds/export scope`，观察数据面扩大。
+6. **FileAccess**：对返回的 `path/url/fileUrl/downloadUrl` 拼接完整 URL 并验证是否可直接访问。
 
 ## 六、报告强制输出
 

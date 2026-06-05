@@ -1,4 +1,4 @@
 interface:
   display_name: "JS API Audit"
   short_description: "Recover complete frontend-backend APIs and audit unauthorized read access"
-  default_prompt: "从前端源码、构建产物、source map 和运行时登录流资产中严格还原全量 API 清单，输出 api_inventory_full.md/json/csv，所有接口都列出 baseURL、路径、参数、认证方式、调用位置、验证状态和手工测试建议；授权 Host 存在时默认执行动态请求验证，无登录态也做 NoAuth，写操作使用低副作用探测；后端业务成功响应必须具体上报字段证据。"
+  default_prompt: "从前端源码、构建产物、source map 和运行时登录流资产中严格还原全量 API 清单，输出 api_inventory_full.md/json/csv，所有接口都列出 baseURL、路径、参数、认证方式、调用位置、验证状态和手工测试建议；授权 Host 存在时默认执行动态请求验证，无登录态也做 NoAuth；对所有 POST JSON 或 body 形态未知接口，除还原参数后的请求外，至少额外发送一次空 JSON {} 探测；写操作使用低副作用探测；后端业务成功响应必须具体上报字段证据。"
