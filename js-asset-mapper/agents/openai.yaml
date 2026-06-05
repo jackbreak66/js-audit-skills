@@ -1,0 +1,4 @@
+interface:
+  display_name: "JS Asset Mapper"
+  short_description: "Map frontend routes APIs assets and parameters"
+  default_prompt: "梳理前端项目、构建产物或运行时登录流中的框架、入口、路由、全量 API、参数、异步 JS/chunk/source map 和运行时配置；Webpack/splitChunks 站点要运行 webpack_chunk_inventory，枚举 runtime 引用、未加载独立 chunk/旧 chunk 和 source map；低危、未验证、参数未知接口也要进入 API 资产台账。"

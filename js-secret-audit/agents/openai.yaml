@@ -1,0 +1,4 @@
+interface:
+  display_name: "JS Secret Audit"
+  short_description: "Scan hardcoded secrets and exposed frontend configs"
+  default_prompt: "审计前端源码和构建产物中的 Token、密钥、账号、默认密码、端点、source map 和配置泄露；Webpack/splitChunks 站点不能只扫 Network 已加载 chunk，必须扫描 webpack_chunk_inventory、可下载独立 chunk/旧 chunk 和 sourcemap，未加载但可访问 chunk 中的硬编码密码也要上报。"

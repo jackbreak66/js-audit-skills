@@ -1,0 +1,4 @@
+interface:
+  display_name: "JS Client Vuln Audit"
+  short_description: "Audit DOM XSS and client-side attack surface"
+  default_prompt: "审计前端 XSS、开放跳转、postMessage、原型污染、依赖和本地存储风险；CORS/点击劫持/安全头缺失仅作为低优先级加固项。"

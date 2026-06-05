@@ -1,0 +1,4 @@
+interface:
+  display_name: "JS Route Guard Audit"
+  short_description: "Audit frontend login flow and route guards"
+  default_prompt: "审计 Vue/React/Angular/ASP.NET 前端登录状态、验证码/2FA、弱口令小字典结果、路由守卫、菜单权限和客户端鉴权绕过。"
