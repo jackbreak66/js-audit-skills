@@ -1,4 +1,4 @@
 interface:
   display_name: "JS Audit Pipeline"
   short_description: "Full frontend JavaScript security audit pipeline"
-  default_prompt: "对前端 JavaScript/Vue/React/Angular/ASP.NET 项目执行白盒/灰盒全链路安全审计；Webpack/splitChunks 站点必须枚举 runtime 引用、source map、未被当前浏览器加载但服务器可访问的独立 chunk/旧 chunk 并纳入敏感信息扫描；必须输出全量 API 台账和所有接口手工发包模板；授权 Host 存在时对 API 执行动态请求验证，并把后端业务成功响应具体写入报告。"
+  default_prompt: "对前端 JavaScript/Vue/React/Angular/ASP.NET 项目执行白盒/灰盒全链路安全审计；Webpack/splitChunks 站点必须枚举 runtime 引用、source map、未被当前浏览器加载但服务器可访问的独立 chunk/旧 chunk 并纳入敏感信息扫描；必须输出全量 API 台账和所有接口手工发包模板；授权 Host 存在时对 API 执行动态请求验证，并把后端业务成功响应具体写入报告；对所有 POST JSON 或 body 形态未知接口，除还原参数后的请求外，至少额外发送一次空 JSON {} 探测。"
