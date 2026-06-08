@@ -133,6 +133,36 @@ js-audit-skills/
 
 ---
 
+## 🔧 前置依赖
+
+本项目的部分能力依赖以下外部 CLI 工具，需要用户自行安装配置：
+
+### 1. Chrome DevTools MCP
+
+**用途**：运行时登录流采集、异步 chunk/JS 下载、路由懒加载验证、定点浏览器补证。
+
+- 仓库：https://github.com/ChromeDevTools/chrome-devtools-mcp
+- 安装后需确保 AI Agent（Claude Code / Kimi Code CLI）已正确配置 MCP 集成
+- 仅在授权测试 Host 上短时使用，不做长时间在线持续扫描
+
+### 2. MiniMax CLI (`mmx`)
+
+**用途**：多模态验证码自动识别，支持普通文本验证码与算术验证码。
+
+- 仓库：https://github.com/MiniMax-AI/cli/
+- 安装后需配置 `~/.mmx/config.json`（API URL + Key）
+- 典型调用：
+  ```bash
+  mmx vision describe \
+    --image "https://target.com/captcha?t=123456" \
+    --prompt "这是一个验证码图片，识别验证码的具体内容。如果是算术题请直接给出计算结果。"
+  ```
+- **注意**：`mmx` 仅处理图片类验证码，滑块/短信/扫码/MFA 仍需跳过自动提交
+
+> 以上工具均为可选增强能力。若未安装，审计流水线会自动降级：缺少 Chrome MCP 时仅执行静态分析；缺少 `mmx` 时遇到验证码直接跳过弱口令探测。
+
+---
+
 ## 🚀 典型使用场景
 
 ### 场景 1：后台管理系统 JS 审计
