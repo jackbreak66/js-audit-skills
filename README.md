@@ -202,37 +202,45 @@ js-audit-skills/
 
 ## 📸 审计成果示例
 
-> 以下截图展示了 `js-audit-skills` 在实际目标上的典型产出效果。
+> 以下截图均来自 `js-audit-skills` 在实际授权目标上的真实审计过程。
 
-### 1. 全量 API 台账与动态验证结果
+### 1. 全链路审计流水线执行
 
-![api-inventory-example](docs/images/api_inventory_example.png)
+![audit-flow](docs/images/audit-flow.png)
 
-> 示例：从 Vue 后台管理系统中提取的完整 API 台账，包含方法、路径、参数来源、认证方式、验证状态及后端响应证据。
+> AI Agent 读取 Skills 体系后，自动创建任务列表并调用 Chrome DevTools MCP 执行运行时资产采集。完整覆盖阶段 1（资产还原）→ 阶段 1.5（登录流）→ 阶段 2（专项审计）→ 阶段 3-5（交叉分析、动态验证与报告输出）。
 
-### 2. 硬编码敏感信息泄露发现
+### 2. 未授权注册接口开放 → 获取有效 JWT Token
 
-![secret-leak-example](docs/images/secret_leak_example.png)
+![unauthorized-jwt](docs/images/unauthorized-jwt.png)
 
-> 示例：在 Webpack 构建产物及残留 chunk 中发现的硬编码账号口令、Token 及文档访问路径。
+> **Critical 发现**：注册接口 `/api/blade-auth/oauth/token?grant_type=register` 完全开放。通过 JS 源码中提取的硬编码 `clientId: saber / clientSecret: saber_secret` 成功注册并获得有效 JWT Token（含 `access_token`、`role_name`、`expires_in`）。随后立即使用此 Token 执行 `LowPriv` 越权测试。
 
-### 3. 路由守卫绕过与弱口令探测
+### 3. NoAuth API 泄露系统默认密码与门店敏感数据
 
-![route-guard-example](docs/images/route_guard_example.png)
+![sensitive-leak](docs/images/sensitive-leak.png)
 
-> 示例：前端路由守卫绕过路径矩阵，配合 mmx 验证码识别后的弱口令小字典探测结果。
+> 通过 API 动态验证发现：
+> - `/api/systemset/GetAllSystemSet` **无需认证**返回 59 条系统配置，包含**系统默认密码 `352239`**
+> - `/api/shop` **无需认证**返回 583KB 门店数据，349 条完整记录（手机号、地址、负责人）
+> - 进一步发现 `UploadDoorFile`、`UploadFactoryFiles` 文件上传端点及 `SaveShop` 未授权访问
+> - 使用泄露的默认密码 `352239` 直接登录后台，扩大测试面
 
-### 4. Webpack 残留 Chunk 覆盖与 Source Map 还原
+### 4. 文件上传 → ASPX 解析 → 系统命令执行（RCE）
 
-![chunk-coverage-example](docs/images/chunk_coverage_example.png)
+![rce-exploit-1](docs/images/rce-exploit-1.png)
 
-> 示例：Webpack splitChunks 完整枚举清单，含当前未加载但服务器可访问的独立 chunk 及 source map 还原后的敏感接口暴露。
+> 完整的漏洞利用链：
+> 1. `UploadFactoryFiles` 上传成功并返回文件访问路径
+> 2. ASPX 文件被服务器成功解析执行，获取服务器信息
+> 3. 最终成功执行系统命令并读取到 `web.config`，包含**数据库连接字符串**
+> 4. Agent 自动生成 `upload_vulnerability_analysis.md`（文件上传漏洞深度分析报告）与 `secret_to_api_inputs.md`（交叉分析产物）
 
-### 5. SafeMutationProbe 低副作用探测
+### 5. mmx 验证码识别联动弱口令探测
 
-![safe-mutation-example](docs/images/safe_mutation_example.png)
+![rce-exploit-2](docs/images/rce-exploit-2.png)
 
-> 示例：对高副作用后台接口使用不存在 ID + canary + `dryRun=true` 进行低副作用探测，后端返回业务成功响应的证据记录。
+> 后台登录页存在图片验证码时，Agent 自动调用本地 `mmx vision describe` 识别验证码内容（如 `CWHk`），填入登录表单后继续执行弱口令小字典探测。识别结果、登录尝试与后端响应均写入 `login_attempts.json`，全程无需人工介入。
 
 ---
 
