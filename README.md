@@ -200,6 +200,42 @@ js-audit-skills/
 
 ---
 
+## 📸 审计成果示例
+
+> 以下截图展示了 `js-audit-skills` 在实际目标上的典型产出效果。
+
+### 1. 全量 API 台账与动态验证结果
+
+![api-inventory-example](docs/images/api_inventory_example.png)
+
+> 示例：从 Vue 后台管理系统中提取的完整 API 台账，包含方法、路径、参数来源、认证方式、验证状态及后端响应证据。
+
+### 2. 硬编码敏感信息泄露发现
+
+![secret-leak-example](docs/images/secret_leak_example.png)
+
+> 示例：在 Webpack 构建产物及残留 chunk 中发现的硬编码账号口令、Token 及文档访问路径。
+
+### 3. 路由守卫绕过与弱口令探测
+
+![route-guard-example](docs/images/route_guard_example.png)
+
+> 示例：前端路由守卫绕过路径矩阵，配合 mmx 验证码识别后的弱口令小字典探测结果。
+
+### 4. Webpack 残留 Chunk 覆盖与 Source Map 还原
+
+![chunk-coverage-example](docs/images/chunk_coverage_example.png)
+
+> 示例：Webpack splitChunks 完整枚举清单，含当前未加载但服务器可访问的独立 chunk 及 source map 还原后的敏感接口暴露。
+
+### 5. SafeMutationProbe 低副作用探测
+
+![safe-mutation-example](docs/images/safe_mutation_example.png)
+
+> 示例：对高副作用后台接口使用不存在 ID + canary + `dryRun=true` 进行低副作用探测，后端返回业务成功响应的证据记录。
+
+---
+
 ## 📋 输出产物规范
 
 审计完成后，标准输出目录结构如下：
