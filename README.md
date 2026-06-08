@@ -36,6 +36,7 @@
   └─ mmx 多模态验证码识别 → 自动填入 → 弱口令小字典探测
   └─ 登录成功判定 → token/cookie/storage 变化采集
   └─ 登录触发的异步 JS/chunk/source map 回流静态审计
+  └─ 访问不同后台路由触发的**懒加载 chunk**下载并回流静态分析
 
 阶段2: 专项静态审计并行
   ├─ js-secret-audit: 硬编码密钥 / Token / 账号口令 / 文档路径 / 环境配置
@@ -97,10 +98,11 @@
 - **验证码场景请求量控制**：弱口令尝试限制为最多前 5 个高优先级组合
 - **失败智能回退**：`mmx` 不可用 / 调用失败 / 连续 2 次解析失败 → 自动跳过弱口令提交，记录原因
 
-### 6. Webpack splitChunks / 残留 Chunk 全覆盖
+### 6. Webpack splitChunks / 残留 Chunk / 懒加载 Chunk 全覆盖
 - 浏览器 Network 仅代表当前路径加载集合，**不代表服务器全部可访问 JS**
+- **运行时通过 Chrome MCP 访问不同路由，捕获 Vue/React 路由懒加载触发的 chunk.js，下载并回流静态审计**
 - 枚举 runtime 引用 chunk、source map 暴露 chunk、服务器可访问但未加载的独立 chunk/旧 chunk
-- 所有可访问 JS/map 资产进入敏感信息扫描和 API 提取范围
+- 所有可访问 JS/map 资产（含懒加载 chunk）进入敏感信息扫描和 API 提取范围
 
 ---
 
