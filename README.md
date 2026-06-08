@@ -2,7 +2,7 @@
 
 > 面向红队的 AI Agent 驱动前端 JavaScript 全链路安全审计 Skills
 
-本项目是一套专为 AI Coding Agent（Claude Code / Kimi Code CLI 等）设计的**可组合安全审计 Skills**，用于对 Vue、React、Angular、Vite、Webpack、Nuxt、Next、ASP.NET 等前端项目执行**源码优先的白盒/灰盒安全审计**。
+本项目是一套专为 AI Coding Agent（Claude Code / Codex /Kimi Code CLI 等）设计的**可组合安全审计 Skills**，用于对 Vue、React、Angular、Vite、Webpack、Nuxt、Next、ASP.NET 等前端项目执行**源码优先的白盒/灰盒安全审计**。
 
 核心定位：**让 AI Agent 像前端红队一样工作**——从静态资产还原到动态接口验证，从硬编码敏感信息挖掘到登录态突破，形成完整的审计闭环。
 
@@ -144,7 +144,7 @@ js-audit-skills/
 **用途**：运行时登录流采集、异步 chunk/JS 下载、路由懒加载验证、定点浏览器补证。
 
 - 仓库：https://github.com/ChromeDevTools/chrome-devtools-mcp
-- 安装后需确保 AI Agent（Claude Code / Kimi Code CLI）已正确配置 MCP 集成
+- 安装后需确保 AI Agent（Claude Code / Codex /Kimi Code CLI）已正确配置 MCP 集成
 - 仅在授权测试 Host 上短时使用，不做长时间在线持续扫描
 
 ### 2. MiniMax CLI (`mmx`)
@@ -238,7 +238,8 @@ js-audit-skills/
 
 ### 5. mmx 验证码识别联动弱口令探测
 
-![rce-exploit-2](docs/images/rce-exploit-2.png)
+![captcha-ocr](docs/images/captcha-ocr.png)
+![captcha-ocr2](docs/images/captcha-ocr2.png)
 
 > 后台登录页存在图片验证码时，Agent 自动调用本地 `mmx vision describe` 识别验证码内容（如 `CWHk`），填入登录表单后继续执行弱口令小字典探测。识别结果、登录尝试与后端响应均写入 `login_attempts.json`，全程无需人工介入。
 
@@ -314,7 +315,3 @@ js-audit-skills/
 4. **无担保声明**：本项目按"原样"提供，不提供任何明示或暗示的担保，包括但不限于适销性、特定用途适用性及非侵权性的担保。
 
 5. **遵守法律**：使用者应当遵守《中华人民共和国网络安全法》及相关法律法规，以及所在国家/地区的所有适用法律。
-
----
-
-*Made for Red Team AI Agents. Use Responsibly.*
