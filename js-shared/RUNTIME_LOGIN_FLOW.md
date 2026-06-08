@@ -25,10 +25,10 @@
 
 ### 2. 登录提交
 
-- 有验证码且无法可靠识别：跳过自动提交，记录原因。
-- 有验证码且可识别：允许一次性辅助填写；失败或出现频控/MFA时停止。
+- **有验证码：优先调用本地 `mmx` 视觉识别工具进行自动识别**，详见下文「验证码识别工具（mmx）」章节。识别成功则自动填入并继续弱口令探测；识别失败或 `mmx` 不可用时，跳过自动提交，记录原因。
+- 有验证码但无法可靠识别（`mmx` 不可用、调用失败或输出不可解析）：跳过自动提交，记录原因。
 - 无验证码：执行默认弱口令小字典；成功即停止，不扩大字典。
-- 每次尝试只记录必要摘要：账号、密码类型/脱敏值、请求 URL、业务 code/msg、是否出现 token/cookie/storage/redirect。
+- 每次尝试只记录必要摘要：账号、密码类型/脱敏值、验证码识别来源（`mmx`/`manual`/无）、请求 URL、业务 code/msg、是否出现 token/cookie/storage/redirect。
 
 ### 3. 登录成功后
 
@@ -79,12 +79,111 @@ sysadmin/sysadmin
 - 后台 DOM、菜单、用户名、角色信息出现。
 - 自动请求 `userInfo/menu/permission/router/config` 并返回有效数据。
 
+## 验证码识别工具（mmx）
+
+当登录页存在图片验证码（含普通文本验证码、算术验证码）时，允许调用本地 `mmx vision describe` 进行自动识别，以扩展弱口令探测的覆盖范围。
+
+### mmx 调用前提
+
+- 本地已安装 `mmx` CLI，且环境可访问 MiniMax API（`api.minimaxi.com`）。
+- 验证码为**图片类**（`<img>`、`base64`、`canvas` 截图可获取），非滑块、短信、扫码、MFA。
+
+### 验证码识别流程
+
+```
+1. 定位验证码元素与字段
+   └─ 记录验证码字段名：captcha / code / verifyCode / captchaCode / imgCode / validateCode
+   └─ 记录验证码图片获取方式：
+      a. <img src="/captcha?t=xxx"> → 提取 src URL（注意去掉固定随机数，保留可刷新 URL 模板）
+      b. base64 data URI → 保存为临时 PNG/JPEG
+      c. canvas 绘制 → 截图保存
+
+2. 对每个弱口令组合执行（有验证码时限制最多前 5 个高优先级组合）：
+   a. 刷新验证码：重新请求验证码 URL（追加随机参数如 ?t=Date.now() 避免缓存），或刷新页面后重新提取。
+   b. 将验证码图片下载/保存到临时路径：{output_path}/runtime_assets/captcha_temp/。
+   c. 调用 mmx：
+      mmx vision describe \
+        --image "{captcha_image_path_or_url}" \
+        --prompt "这是一个验证码图片，识别验证码的具体内容。如果是算术题请直接给出计算结果。"
+   d. 解析 mmx 输出：
+      • 算术验证码：匹配「答案是 **XX**」→ 提取 XX 作为验证码值。
+      • 文本验证码：匹配「验证码内容是：**XX**」或「内容是：**XX**」→ 提取 XX；否则提取第一个 **XX** 加粗块。
+      • 输出为空、无加粗块、包含"无法识别""看不清"等 → 视为识别失败。
+   e. 将识别结果填入验证码字段，组装完整登录请求（username + password + captcha + 其他固定字段）。
+   f. 发送登录请求，记录：HTTP 状态、业务 code/msg、是否提示"验证码错误"。
+   g. 若后端返回"验证码错误/已过期/不匹配"：
+      • 记录本次识别结果与失败原因。
+      • 继续下一个弱口令组合（回到 2a 刷新验证码）。
+   h. 若后端返回"用户名或密码错误"：
+      • 说明验证码识别成功（已通过验证码校验关卡），继续下一个弱口令。
+   i. 若出现账户锁定、剩余尝试次数、频控、IP 风控：立即停止。
+
+3. 识别失败回退
+   • mmx 调用失败（网络、API 错误、本地未安装）→ 跳过自动弱口令提交。
+   • 连续 2 次解析不出有效验证码内容 → 跳过自动弱口令提交。
+   • 记录跳过原因和 mmx 原始输出（脱敏后）。
+```
+
+### 验证码场景下的弱口令限制
+
+有验证码时，为避免高频请求触发风控，弱口令小字典只取**前 5 个高优先级组合**：
+
+```text
+admin/123456
+admin/admin
+administrator/123456
+root/root
+test/test
+```
+
+若源码/注释中发现默认账号密码线索，可替换为线索组合，但总数仍不超过 5 次。
+
+### mmx 输出解析规则（供 agent 使用）
+
+```javascript
+// 伪代码：从 mmx stdout 提取验证码值
+function extractCaptchaFromMmx(stdout) {
+  // 算术题：答案是 **25**
+  const mathMatch = stdout.match(/答案是\s*\*\*(\S+)\*\*/);
+  if (mathMatch) return mathMatch[1].trim();
+
+  // 明确标注
+  const explicitMatch = stdout.match(/验证码内容是：\*\*(\S+)\*\*/);
+  if (explicitMatch) return explicitMatch[1].trim();
+
+  // 通用加粗块 fallback
+  const genericMatch = stdout.match(/\*\*([^*\s]+)\*\*/);
+  if (genericMatch) return genericMatch[1].trim();
+
+  return null; // 识别失败
+}
+```
+
+### 记录要求
+
+`login_attempts.json` 中每条验证码相关尝试必须包含：
+
+```json
+{
+  "timestamp": "...",
+  "username": "admin",
+  "password_type": "common_weak",
+  "captcha_source": "mmx",
+  "captcha_recognized": "JS98",
+  "captcha_raw_mmx_output": "图片中的验证码内容是：**JS98**",
+  "response_code": "...",
+  "response_msg": "...",
+  "captcha_validation_passed": true,
+  "login_success": false
+}
+```
+
 ## 停止条件
 
 出现以下任一情况立即停止自动尝试：
 
 - 登录成功。
-- 验证码不可识别。
+- 验证码不可识别（`mmx` 不可用、调用失败、输出不可解析）。
 - 短信、扫码、MFA、人机验证、滑块等需要人工交互。
 - 账户锁定、剩余尝试次数、频控、IP 风控提示。
 - 用户未授权对该 Host 做运行时登录尝试。

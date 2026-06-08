@@ -84,8 +84,8 @@ description: 前端 JavaScript 白盒/灰盒安全审计流水线。用于编排
 ### 执行规则
 
 1. 登录前记录入口 URL、表单字段、验证码/2FA/租户字段、初始 JS/CSS/config/source map URL。
-2. 如果存在验证码且 Claude Code 无法可靠识别，跳过弱口令提交，只记录验证码防护和人工验证建议。
-3. 如果验证码可识别，可以进行一次性辅助填写；若出现短信、扫码、MFA、账户锁定或频控提示，立即停止自动尝试。
+2. 如果存在**图片验证码**，优先调用本地 `mmx vision describe` 自动识别（支持普通文本验证码和算术验证码）。识别成功则自动填入并继续弱口令小字典探测；识别失败或 `mmx` 不可用时，跳过自动弱口令提交，记录原因。
+3. 如果验证码为滑块、短信、扫码、MFA，或出现账户锁定、频控提示，立即停止自动尝试。
 4. 无验证码时执行小字典弱口令测试，默认组合见 `../js-shared/RUNTIME_LOGIN_FLOW.md`；成功即停止，不扩大爆破。
 5. 成功登录后采集 token/cookie/localStorage/sessionStorage 变化、dashboard/menu/userInfo/permission/router API、登录后新增 chunk/source map。
 6. 所有新发现 JS、source map、runtime config 写入 `{output_path}/runtime_assets/`，并重新纳入阶段1/阶段2的静态输入。
